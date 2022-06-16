@@ -56,7 +56,7 @@ const login = async (req, res, next) => {
       expiresIn: "1h",
     });
     await User.findByIdAndUpdate(user._id, { accessToken });
-    res.status(200).json({ user });
+    res.status(200).json({ user, accessToken });
   } catch (error) {
     console.log(error);
   }
