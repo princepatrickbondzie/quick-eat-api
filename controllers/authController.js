@@ -14,6 +14,7 @@ const register = async (req, res, next) => {
     address,
     isAdmin,
     isMerchant,
+    isRider,
   } = req.body;
 
   try {
@@ -33,7 +34,10 @@ const register = async (req, res, next) => {
       city,
       locality,
       address,
-      role: (isAdmin && "admin") || (isMerchant && "merchant"),
+      role:
+        (isAdmin && "admin") ||
+        (isMerchant && "merchant") ||
+        (isRider && "rider"),
     });
     if (user) {
       res.status(201).json({ user });
