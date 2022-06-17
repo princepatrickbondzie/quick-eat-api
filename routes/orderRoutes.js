@@ -8,10 +8,10 @@ const {
 } = require("../controllers/orderController");
 const { verifyToken } = require("../controllers/authController");
 
-router.get("/products", verifyToken, getOrders);
-router.get("/product", verifyToken, craeteOrder);
-router.get("/product/:id", verifyToken, getOrder);
-router.put("/product/:id", verifyToken, updateOrder);
-router.delete("/product/:id", verifyToken, deleteOrder);
+router.get("/orders", verifyToken, getOrders);
+router.get("/order", verifyToken, craeteOrder);
+router.get("/order/:id", verifyToken, getOrder);
+router.put("/order/:id", verifyToken, updateOrder);
+router.delete("/order/:id", verifyToken, deleteOrder);
 
 module.exports = router;
