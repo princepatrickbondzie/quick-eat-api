@@ -56,7 +56,7 @@ const login = async (req, res, next) => {
     const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) next(new Error("Invalid Credentials"));
 
-    const accessToken = jwt.sign({ id: user._id }, "key0987654321", {
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
     await User.findByIdAndUpdate(user._id, { accessToken });
@@ -66,35 +66,102 @@ const login = async (req, res, next) => {
   }
 };
 
-const verifyToken = (req, res, next) => {
-  let token = req.headers["authorization"] || "";
+//Similar to sign up
+const forgotPassword = (req, res) => {
+  const { email } = req.body;
 
-  token = token.split(" ")[1];
-  if (token) {
-    const decodedToken = jwt.verify(token, "key0987654321");
-    req.user = decodedToken.id;
-    next();
-  } else {
-    res.status(403).json({ message: "Unauthorized" });
-  }
-};
+  User.findOne({ email }, (err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User with that email does not exist",
+      });
+    }
 
-const refreshToken = (req, res) => {
-  try {
-    const rf_token = req.cookies.refreshtoken;
-    if (!rf_token)
-      return res.status(400).json({ msg: "Please Login or Register" });
-
-    jwt.verify(rf_token, "key0987654321", (err, user) => {
-      if (err) return res.status(400).json({ msg: "Please Login or Register" });
-
-      const accesstoken = createAccessToken({ id: user.id });
-
-      res.json({ accesstoken });
+    const token = jwt.sign({ id: user._id }, "key0987654321", {
+      expiresIn: "30m",
     });
-  } catch (err) {
-    return res.status(500).json({ msg: err.message });
+
+    const emailData = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: `Password Reset link`,
+      html: `
+              <h1>Please use the following link to reset your password</h1>
+              <p>${process.env.CLIENT_URL}/auth/password/reset/${token}</p>
+              <hr />
+              <p>This email may contain sensitive information</p>
+              
+          `,
+    };
+
+    return user.updateOne({ resetPasswordLink: token }, (err, success) => {
+      if (err) {
+        // console.log('RESET PASSWORD LINK ERROR', err);
+        return res.status(400).json({
+          error: "Database connection error on user password forgot request",
+        });
+      } else {
+        sgMail
+          .send(emailData)
+          .then((sent) => {
+            // console.log('SIGNUP EMAIL SENT', sent)
+            return res.json({
+              message: `Email has been sent to ${email}. Follow the instruction to reset your password.`,
+            });
+          })
+          .catch((err) => {
+            // console.log('SIGNUP EMAIL SENT ERROR', err)
+            return res.json({
+              message: err.message,
+            });
+          });
+      }
+    });
+  });
+};
+
+//Similar to accountActivation
+exports.resetPassword = (req, res) => {
+  const { resetPasswordLink, newPassword } = req.body;
+  // 1.Check if token is available and verify with the backend
+  if (resetPasswordLink) {
+    jwt.verify(
+      resetPasswordLink,
+      process.env.JWT_RESET_PASSWORD,
+      (err, decoded) => {
+        if (err) {
+          // console.log('jwt RESET PASSWORD error', err);
+          res
+            .status(401)
+            .json({ error: "Expired link. Please reset password again" });
+        }
+        // 2. Find the user in the database from the token
+        User.findOne({ resetPasswordLink }, (err, user) => {
+          if (err) {
+            return res.status(401).json({
+              error: "Could not find the token in the database",
+            });
+          }
+          const updatedFields = {
+            password: newPassword,
+            resetPasswordLink: "",
+          };
+          //use Lodash to deep clone the object instead of Object.assign
+          user = Object.assign(user, updatedFields);
+          user.save((err, results) => {
+            if (err) {
+              return res.status(401).json({
+                error: "Fail to updated the user password",
+              });
+            }
+            res.json({ message: "Your password has been updated!" });
+          });
+        });
+      }
+    );
+  } else {
+    return res.json({ message: "Reset token is not found" });
   }
 };
 
-module.exports = { register, login, refreshToken, verifyToken };
+module.exports = { register, login };

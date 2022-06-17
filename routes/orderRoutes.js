@@ -6,7 +6,7 @@ const {
   updateOrder,
   deleteOrder,
 } = require("../controllers/orderController");
-const { verifyToken } = require("../controllers/authController");
+const { verifyToken, isAdmin, isMerchant } = require("../middleware/checkAuth");
 
 router.get("/orders", verifyToken, getOrders);
 router.get("/order", verifyToken, craeteOrder);

@@ -12,8 +12,7 @@ const getProduct = async (req, res) => {
 };
 
 const craeteProduct = async (req, res) => {
-  const { name, description, durationFrom, durationTo, price, image } =
-    req.body;
+  const { name, description, price, quantity, image, category } = req.body;
   try {
   } catch (error) {
     console.log(error);

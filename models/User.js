@@ -26,6 +26,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Password is required"],
       unique: true,
+      minlength: 6,
     },
     city: { type: String },
     locality: { type: String },

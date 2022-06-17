@@ -5,7 +5,7 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
-const { verifyToken } = require("../controllers/authController");
+const { verifyToken, isAdmin } = require("../middleware/checkAuth");
 
 router.get("/users", verifyToken, getUsers);
 router.get("/user/:id", verifyToken, getUser);

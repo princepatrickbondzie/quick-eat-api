@@ -6,7 +6,7 @@ const {
   updateProduct,
   deleteProduct,
 } = require("../controllers/productController");
-const { verifyToken } = require("../controllers/authController");
+const { verifyToken,isAdmin,isMerchant } = require("../middleware/checkAuth");
 
 router.get("/products", verifyToken, getProducts);
 router.get("/product", verifyToken, craeteProduct);
