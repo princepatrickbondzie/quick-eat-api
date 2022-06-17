@@ -59,8 +59,8 @@ const login = async (req, res, next) => {
     const accessToken = jwt.sign({ id: user._id }, "key0987654321", {
       expiresIn: "1h",
     });
-    await User.findByIdAndUpdate(user._id, { accessToken }, { new: true });
-    res.status(200).json({ user });
+    const newUser = await User.findByIdAndUpdate({ id: user._id }, accessToken, { new: true });
+    res.status(200).json({ newUser });
   } catch (error) {
     console.log(error);
   }
