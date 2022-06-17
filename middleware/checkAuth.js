@@ -32,20 +32,13 @@ const refreshToken = (req, res) => {
   }
 };
 
-const isAuth = (req, res, next) => {
-  let user = req.profile && req.auth && req.profile._id == req.auth._id;
-  if (!user) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-  next();
-};
-
 const isAdmin = (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ error: "Admin resource! Access denied!" });
   }
   next();
 };
+
 const isMerchant = (req, res, next) => {
   if (req.user.role !== "merchant") {
     return res.status(403).json({ error: "Merchant resource! Access denied!" });
