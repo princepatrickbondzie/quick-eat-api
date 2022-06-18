@@ -59,7 +59,6 @@ const login = async (req, res, next) => {
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    await User.findByIdAndUpdate(user._id, { accessToken });
     res.status(200).json({ user, accessToken });
   } catch (error) {
     console.log(error);

@@ -15,8 +15,7 @@ const craeteFood = async (req, res) => {
   const {
     name,
     description,
-    durationFrom,
-    durationTo,
+    duration,
     price,
     quantity,
     image,
